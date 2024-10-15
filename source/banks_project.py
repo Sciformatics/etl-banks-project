@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import numpy as np
 import requests, os, sqlite3
 from datetime import datetime
-
+import pandas as pd
 
 # CONSTANTS
 
@@ -18,10 +18,27 @@ def log_progress(LOGFILE, message):
         file_in.write(f'{time_date} : {message}')
 
 
-url = 'https://web.archive.org/web/20230908091635/https://en.wikipedia.org/wiki/List_of_largest_banks'
-soup = url.prettify
-print(soup)
+response_archive = requests.get('https://en.wikipedia.org/wiki/List_of_largest_banks')
+soup = BeautifulSoup(response_archive.text, 'html.parser')
+headings_tags = ['h1','h2','h3']
+heading = soup.find('h2', string='By market capitalization')
+table = heading.find_next('table')
+data = []
+columns = [header.text for header in table.find_next('th')]
+for row in table.find_all('tr'):
+    row_data = []
+    columns.append(row.find_all('th'))
+    for cell in row.find_all('td'):
+        row_data.append(cell.text)
+    data.append(row_data)
+df = pd.DataFrame(data)
+print(df)
+#print(soup.prettify)
 
+# response_wiki = requests.get('https://en.wikipedia.org/wiki/List_of_largest_banks')
+# print(response_wiki.status_code)
+# soup_wiki = BeautifulSoup(response_archive.text, 'html.parser')
+# print(soup_wiki.prettify)
 
 
 
